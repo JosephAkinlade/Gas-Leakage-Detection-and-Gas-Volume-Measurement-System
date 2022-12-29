@@ -1,3 +1,4 @@
+#include <EEPROM.h>
 #include "sim800l.h"
 #include "keypad.h"
 #include "HX711.h"
@@ -15,6 +16,23 @@ static SoftwareSerial gsmSerial(2,3); //RX:2, TX:3
 static SIM800L gsm(&gsmSerial);
 static LiquidCrystal_I2C lcd(0x27,20,4);
 static HMI hmi(&lcd,&keypad);
+
+static void EEPROM_storeMobileNum(void)
+{
+  for(uint8_t i = 0; i < 11; i++)
+  {
+    EEPROM.update(i, hmi.mobileNum[i]);
+    delay(5);
+  }
+}
+
+static void EEPROM_getMobileNum(void)
+{
+  for(uint8_t i = 0; i < 11; i++)
+  {
+    hmi.mobileNum[i] = EEPROM[i];
+  }
+}
 
 /**
  * @brief Momentarily signifies storage of HMI configurable 
@@ -35,15 +53,16 @@ void setup() {
   pinMode(MQ5_PIN, INPUT);
   lcd.init();
   lcd.backlight();
-  lcd.setCursor(0,0);
-  lcd.print("Gas Leakage detction"); //startup message
-  lcd.setCursor(8,1);
-  lcd.print("and");
-  lcd.setCursor(5,2);
+  lcd.setCursor(4,0);
+  lcd.print("Gas Leakage "); //startup message
+  lcd.setCursor(4,1);
+  lcd.print("detection and");
+  lcd.setCursor(4,2);
   lcd.print("Gas Volume");
   lcd.setCursor(4,3);
   lcd.print("measurement");
   delay(3000);
+  EEPROM_getMobileNum();
   lcd.clear(); 
 }
 
@@ -63,11 +82,11 @@ void loop() {
 //  }
 
   hmi.Start();
-  if(hmi.GetSaveButtonState())
+  if(hmi.GetTypingDoneFlag())
   {
-    //HMI_SaveState(hmi,param,numOfHmiConfigParams,"6");
+    EEPROM_storeMobileNum();
     NotifyParamSave(lcd);
-    hmi.ClearSaveButtonState();
+    hmi.ClearTypingDoneFlag();
   }
 
 }
