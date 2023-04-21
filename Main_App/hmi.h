@@ -5,6 +5,7 @@ class HMI
 {
   private:
     enum State{ST_HOMEPAGE,ST_MENUPAGE,ST_SETSIZE,ST_CHANGENUM};
+    enum ROWS{ROW1 = 0,ROW2,ROW3,ROW4};
     //Objects
     LiquidCrystal_I2C* lcdPtr;
     Keypad* keypadPtr;
@@ -19,6 +20,7 @@ class HMI
     void SetMobileNum(char* numBuffer);
     //Parameter buffer
     char cylinderSizeBuff[3];
+    char mobileNum[13];
     
     void AlignData(uint8_t param);
     //Display Methods
@@ -35,11 +37,13 @@ class HMI
     void StateFunc_SetSize(void);
     void StateFunc_ChangeNum(void);
     //void StateFunc_LeakageCheck(void);
+    void StoreMobileNum(void);
+    void GetMobileNum(void);
      
   public:
     HMI(LiquidCrystal_I2C* lcdPtr,Keypad* keyPadPtr);
-    char mobileNum[13];
     void Start(void);
     void ClearTypingDoneFlag(void);
     bool GetTypingDoneFlag(void);
+    
 };

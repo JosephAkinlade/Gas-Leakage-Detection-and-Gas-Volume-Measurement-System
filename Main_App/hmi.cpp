@@ -1,13 +1,34 @@
 #include <Arduino.h>
+#include <EEPROM.h>
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h> //Version 1.1.2
 #include "keypad.h"
 #include "hmi.h"
 
+#define EEPR_CYLINDER_SIZE 15
+
 //LCD (indexes and number of rows)
 const uint8_t minRow = 0;
 const uint8_t maxRow = 3;
 const uint8_t numOfRows = 4;
+
+
+void HMI::StoreMobileNum(void)
+{
+  for(uint8_t i = 0; i < 11; i++)
+  {
+    EEPROM.update(i, HMI::mobileNum[i]);
+    delay(5);
+  }
+}
+
+void HMI::GetMobileNum(void)
+{
+  for(uint8_t i = 0; i < 11; i++)
+  {
+    HMI::mobileNum[i] = EEPROM[i];
+  }
+}
 
 void HMI::AlignData(uint8_t param)
 {
@@ -38,13 +59,15 @@ void HMI::SetParam(uint8_t* paramPtr,char* paramBuffer,uint8_t paramColumn)
       //convert char buffer to int
       String str = String(paramBuffer);
       *paramPtr = str.toInt();
-      lcdPtr->setCursor(paramColumn,currentRow);
+      lcdPtr->setCursor(paramColumn,ROW2);
       HMI::AlignData(*paramPtr);
     }
     else
     {
       if(key == '#')
       {
+        EEPROM.update(EEPR_CYLINDER_SIZE,*paramPtr);
+        typingDone = true;
         break;
       }
     }
@@ -65,8 +88,7 @@ void HMI::SetMobileNum(char* numBuffer)
       {
         numBuffer[i-1] = key;
         lcdPtr->setCursor(i,1);
-        lcdPtr->print(key);
-        
+        lcdPtr->print(key); 
       }
     }
     else
@@ -75,6 +97,7 @@ void HMI::SetMobileNum(char* numBuffer)
       {
         lcdPtr->setCursor(0,0);
         lcdPtr->print(' ');
+        HMI::StoreMobileNum();
         typingDone = true;
         Serial.println(HMI::mobileNum);
         break;
@@ -116,13 +139,14 @@ void HMI::DisplayRowHeadings(char** heading, bool num = false)
 
 void HMI::DisplayHomePage(void)
 {
-  char heading1[] = "Cylinder Size: ";
-  char heading2[] = "Gas left: ";
-  char heading3[] = "Condition: ";
+  char heading1[] = "Size(KG): ";
+  char heading2[] = "Total Mass(KG): ";
+  char heading3[] = "Gas left(KG): ";
   char heading4[] = "";
   char* heading[] = {heading1,heading2,heading3,heading4};
-  //HMI::HighlightRow(row,heading);
   HMI::DisplayRowHeadings(heading);
+  lcdPtr->setCursor(10,0);
+  HMI::AlignData(HMI::cylinderSize); 
 }
 
 void HMI::DisplayMenuPage(void)
@@ -132,7 +156,6 @@ void HMI::DisplayMenuPage(void)
   char heading3[] = "";
   char heading4[] = "";
   char* heading[] = {heading1,heading2,heading3,heading4};
-  //HMI::HighlightRow(row,heading);
   HMI::DisplayRowHeadings(heading);
 }
 
@@ -143,8 +166,7 @@ void HMI::SetCylinderSizeMenu(void)
   char heading3[] = "";
   char heading4[] = "";
   char* heading[] = {heading1,heading2,heading3,heading4};
-  //HMI::HighlightRow(row,heading);
-  HMI::DisplayRowHeadings(heading);  
+  HMI::DisplayRowHeadings(heading); 
 }
 
 void HMI::ChangeMobileNumber(void)
@@ -165,11 +187,7 @@ void HMI::changeStateTo(State nextState)
 
 void HMI::StateFunc_Homepage(void)
 {
-  //Get stored weight from EEPROM
-  uint8_t weight = 12;
   HMI::DisplayHomePage();
-  //Code to add the values
-
   char key = keypadPtr->GetChar();
   switch(key)
   {
@@ -200,6 +218,8 @@ void HMI::StateFunc_Menupage(void)
 void HMI::StateFunc_SetSize(void)
 {
   HMI::SetCylinderSizeMenu();
+  lcdPtr->setCursor(1,1);
+  HMI::AlignData(HMI::cylinderSize);
   char key = keypadPtr->GetChar();
   switch(key)
   {
@@ -209,7 +229,9 @@ void HMI::StateFunc_SetSize(void)
     case '#':
       lcdPtr->setCursor(0,0);
       lcdPtr->print('>');
-      HMI::SetParam(&cylinderSize,cylinderSizeBuff,17);
+      lcdPtr->setCursor(0,1);
+      lcdPtr->print("   ");
+      HMI::SetParam(&cylinderSize,cylinderSizeBuff,1);
       break;
   } 
 }
@@ -241,8 +263,8 @@ HMI::HMI(LiquidCrystal_I2C* lcdPtr,Keypad* keypadPtr)
   currentState = ST_HOMEPAGE;
   currentRow = minRow;
   typingDone = false;
-  
-  cylinderSize = 0; 
+  cylinderSize = EEPROM[EEPR_CYLINDER_SIZE] % 255;
+  HMI::GetMobileNum(); 
   uint8_t i;
   for(i = 0; i < 2; i++)
   {

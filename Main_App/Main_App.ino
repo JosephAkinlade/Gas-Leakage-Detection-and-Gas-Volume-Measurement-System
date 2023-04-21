@@ -17,23 +17,6 @@ static SIM800L gsm(&gsmSerial);
 static LiquidCrystal_I2C lcd(0x27,20,4);
 static HMI hmi(&lcd,&keypad);
 
-static void EEPROM_storeMobileNum(void)
-{
-  for(uint8_t i = 0; i < 11; i++)
-  {
-    EEPROM.update(i, hmi.mobileNum[i]);
-    delay(5);
-  }
-}
-
-static void EEPROM_getMobileNum(void)
-{
-  for(uint8_t i = 0; i < 11; i++)
-  {
-    hmi.mobileNum[i] = EEPROM[i];
-  }
-}
-
 /**
  * @brief Momentarily signifies storage of HMI configurable 
  * parameters in <> flash memory.
@@ -62,7 +45,6 @@ void setup() {
   lcd.setCursor(4,3);
   lcd.print("measurement");
   delay(3000);
-  EEPROM_getMobileNum();
   lcd.clear(); 
 }
 
@@ -84,7 +66,6 @@ void loop() {
   hmi.Start();
   if(hmi.GetTypingDoneFlag())
   {
-    EEPROM_storeMobileNum();
     NotifyParamSave(lcd);
     hmi.ClearTypingDoneFlag();
   }
