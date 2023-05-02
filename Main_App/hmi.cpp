@@ -188,6 +188,9 @@ void HMI::changeStateTo(State nextState)
 void HMI::StateFunc_Homepage(void)
 {
   HMI::DisplayHomePage();
+//  lcdPtr->setCursor(16,1);
+//  lcdPtr->print(abs(scalePtr->get_units()),1);
+  Serial.println(abs(scalePtr->get_units()),1);
   char key = keypadPtr->GetChar();
   switch(key)
   {
@@ -255,11 +258,12 @@ void HMI::StateFunc_ChangeNum(void)
   } 
 }
 
-HMI::HMI(LiquidCrystal_I2C* lcdPtr,Keypad* keypadPtr)
+HMI::HMI(LiquidCrystal_I2C* lcdPtr,Keypad* keypadPtr,HX711* scalePtr)
 {
   //Initialize private variables
   this->lcdPtr = lcdPtr;
   this->keypadPtr = keypadPtr;
+  this->scalePtr = scalePtr;
   currentState = ST_HOMEPAGE;
   currentRow = minRow;
   typingDone = false;

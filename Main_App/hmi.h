@@ -1,6 +1,8 @@
 #pragma once
 
 #include <LiquidCrystal_I2C.h>
+#include "HX711.h"
+
 class HMI
 {
   private:
@@ -9,6 +11,7 @@ class HMI
     //Objects
     LiquidCrystal_I2C* lcdPtr;
     Keypad* keypadPtr;
+    HX711* scalePtr;
     State currentState;
     uint8_t currentRow; //LCD
     bool typingDone;
@@ -41,7 +44,7 @@ class HMI
     void GetMobileNum(void);
      
   public:
-    HMI(LiquidCrystal_I2C* lcdPtr,Keypad* keyPadPtr);
+    HMI(LiquidCrystal_I2C* lcdPtr,Keypad* keyPadPtr,HX711* scalePtr);
     void Start(void);
     void ClearTypingDoneFlag(void);
     bool GetTypingDoneFlag(void);

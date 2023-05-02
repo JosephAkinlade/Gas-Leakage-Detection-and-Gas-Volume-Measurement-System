@@ -1,7 +1,7 @@
 #include "HX711.h"
 
 #define LC_DOUT_PIN 4
-#define LC_SCK_PIN  5
+#define LC_SCK_PIN  3
 
 HX711 scale;
 
@@ -13,7 +13,7 @@ void setup() {
   scale.read_average(20);
   scale.get_value(5);
   scale.get_units(5);
-  //scale.set_scale();
+  scale.set_scale(-400);
   scale.tare();
   scale.read();
   scale.read_average(20);

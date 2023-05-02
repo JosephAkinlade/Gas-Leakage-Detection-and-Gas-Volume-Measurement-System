@@ -4,18 +4,23 @@
 #include "HX711.h"
 #include "hmi.h"
 
-#define BUZZER 4
-#define MQ5_PIN A0
-#define THRESHOLD 120
+#define BUZZER            A1
+#define MQ5_PIN           A0
+#define THRESHOLD         120
+#define LOADCELL_DOUT_PIN  4
+#define LOADCELL_SCK_PIN   3
 
 uint8_t rowPins[NUMBER_OF_ROWS] = {5,6,7,8};
 uint8_t columnPins[NUMBER_OF_COLUMNS] = {9,10,11,12};
 
 static Keypad keypad(rowPins,columnPins);
-static SoftwareSerial gsmSerial(2,3); //RX:2, TX:3
+static SoftwareSerial gsmSerial(3,2); //GSM RX:2, GSM TX:3
 static SIM800L gsm(&gsmSerial);
 static LiquidCrystal_I2C lcd(0x27,20,4);
-static HMI hmi(&lcd,&keypad);
+static HX711 scale;
+static HMI hmi(&lcd,&keypad,&scale);
+
+float calibration_factor = -104000; //This value seemed to work well
 
 /**
  * @brief Momentarily signifies storage of HMI configurable 
@@ -34,6 +39,12 @@ void setup() {
   Serial.begin(115200);
   pinMode(BUZZER, OUTPUT);
   pinMode(MQ5_PIN, INPUT);
+  //[LOAD CELL INIT]
+  scale.begin(LOADCELL_DOUT_PIN, LOADCELL_SCK_PIN);
+  scale.set_scale();
+  scale.tare();
+  scale.set_scale(calibration_factor); //Adjust to this calibration factor
+  //[LCD INIT]
   lcd.init();
   lcd.backlight();
   lcd.setCursor(4,0);
