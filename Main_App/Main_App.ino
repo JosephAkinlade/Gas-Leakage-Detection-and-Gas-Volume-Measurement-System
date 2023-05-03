@@ -6,7 +6,7 @@
 
 #define BUZZER            A1
 #define MQ5_PIN           A0
-#define THRESHOLD         120
+#define THRESHOLD         140
 #define LOADCELL_DOUT_PIN  4
 #define LOADCELL_SCK_PIN   3
 
@@ -21,6 +21,7 @@ static HX711 scale;
 static HMI hmi(&lcd,&keypad,&scale);
 
 float calibration_factor = -104000; //This value seemed to work well
+bool msgSent = false;
 
 /**
  * @brief Momentarily signifies storage of HMI configurable 
@@ -36,7 +37,7 @@ static void NotifyParamSave(LiquidCrystal_I2C& lcd)
 
 void setup() {
   // put your setup code here, to run once:
-  Serial.begin(115200);
+  Serial.begin(9600);
   pinMode(BUZZER, OUTPUT);
   pinMode(MQ5_PIN, INPUT);
   //[LOAD CELL INIT]
@@ -61,24 +62,27 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-//  int rawVal = analogRead(MQ5_PIN);
-//  Serial.println(rawVal);
-
-//  if(rawVal > THRESHOLD)
-//  {
-//    digitalWrite(BUZZER, HIGH);
-//    gsm.SendSMS("+2348098056507", "GAS LEAKAGE DETECTED");
-//  }
-//  else
-//  {
-//    digitalWrite(BUZZER, LOW);
-//  }
-
+  int rawVal = analogRead(MQ5_PIN);
+  Serial.println(rawVal);
+  if(rawVal > THRESHOLD)
+  {
+    digitalWrite(BUZZER, HIGH);
+    if(!msgSent)
+    {
+      gsm.SendSMS("+2348098056507", "GAS LEAKAGE DETECTED");
+      msgSent = true;
+    } 
+  }
+  else
+  {
+    digitalWrite(BUZZER, LOW);
+    msgSent = false;
+  }
+  
   hmi.Start();
   if(hmi.GetTypingDoneFlag())
   {
     NotifyParamSave(lcd);
     hmi.ClearTypingDoneFlag();
   }
-
 }
