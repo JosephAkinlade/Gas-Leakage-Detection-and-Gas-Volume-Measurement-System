@@ -32,3 +32,25 @@ void SIM800L::SendSMS(char* phoneNum,char* msg)
   port->write(endOfMsgCmd); //command termination
   delay(250);  
 }
+
+void SIM800L::SendSMS(char* phoneNum,char* msg,uint32_t timeInterval)
+{
+  uint32_t prevTime = millis();
+  if(millis() - prevTime >= timeInterval)
+  {
+    const uint8_t endOfMsgCmd = 26;
+    char atCmgsCmd[27] = "AT+CMGS=\"";
+    port->write("AT+CMGF=1\r\n");
+    delay(250);
+    strcat(atCmgsCmd,phoneNum);
+    strcat(atCmgsCmd,"\"\r\n");
+    port->write(atCmgsCmd);
+    delay(250);
+    port->write(msg);
+    port->write("\r\n");
+    delay(250);
+    port->write(endOfMsgCmd); //command termination
+    delay(250);
+    prevTime = millis();
+  }
+}

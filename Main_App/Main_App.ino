@@ -1,4 +1,5 @@
 #include <EEPROM.h>
+#include <Wire.h>
 #include "sim800l.h"
 #include "keypad.h"
 #include "HX711.h"
@@ -9,6 +10,7 @@
 #define THRESHOLD         140
 #define LOADCELL_DOUT_PIN  4
 #define LOADCELL_SCK_PIN   3
+#define SIZE_PHONE         12
 
 uint8_t rowPins[NUMBER_OF_ROWS] = {5,6,7,8};
 uint8_t columnPins[NUMBER_OF_COLUMNS] = {9,10,11,12};
@@ -17,11 +19,12 @@ static Keypad keypad(rowPins,columnPins);
 static SoftwareSerial gsmSerial(-1,2); //GSM RX:2, GSM TX:3
 static SIM800L gsm(&gsmSerial);
 static LiquidCrystal_I2C lcd(0x27,20,4);
-HX711 scale;
+static HX711 scale;
 static HMI hmi(&lcd,&keypad,&scale);
 
 float calibration_factor = -104000; //This value seemed to work well
 bool msgSent = false;
+
 
 /**
  * @brief Momentarily signifies storage of HMI configurable 
@@ -69,7 +72,9 @@ void loop() {
     digitalWrite(BUZZER, HIGH);
     if(!msgSent)
     {
-      gsm.SendSMS("+2348098056507", "GAS LEAKAGE DETECTED");
+      char phoneNum[SIZE_PHONE + 3] = "+234";
+      strcpy(phoneNum + 4,hmi.mobileNum + 1);
+      gsm.SendSMS(phoneNum, "GAS LEAKAGE DETECTED");
       msgSent = true;
     } 
   }
@@ -84,5 +89,13 @@ void loop() {
   {
     NotifyParamSave(lcd);
     hmi.ClearTypingDoneFlag();
+  }
+  if(hmi.GetGasLevel())
+  {
+    char phoneNum[SIZE_PHONE + 3] = "+234";
+    strcpy(phoneNum + 4,hmi.mobileNum + 1);
+    //Send message every 3 minute
+    gsm.SendSMS(phoneNum, "GAS LEVEL LOW",180000);
+    hmi.ClearGasLevelFlag();
   }
 }

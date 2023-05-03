@@ -118,8 +118,6 @@ void HMI::HighlightRow(uint8_t row,char** heading)
   }  
 }
 
-
-
 void HMI::DisplayRowHeadings(char** heading, bool num = false)
 {
   for(uint8_t i = 0; i < numOfRows; i++)
@@ -189,13 +187,20 @@ void HMI::changeStateTo(State nextState)
 
 void HMI::StateFunc_Homepage(void)
 {
-  float weight = abs(scalePtr->get_units());
+  float weight = fabs(scalePtr->get_units());
+  float gasLeft = fabs(fabs(scalePtr->get_units()) - HMI::cylinderSize);
   HMI::DisplayHomePage();
   lcdPtr->setCursor(15,1);
   if(lround(prevWeight*10) != lround(weight*10))
   {
     prevWeight = weight;
     lcdPtr->print(prevWeight,2);  
+  }
+  lcdPtr->setCursor(14,2);
+  lcdPtr->print(gasLeft);
+  if(lround(gasLeft) <= 2 )
+  {
+    gasLevelLow = true;
   }
   char key = keypadPtr->GetChar();
   switch(key)
@@ -273,6 +278,7 @@ HMI::HMI(LiquidCrystal_I2C* lcdPtr,Keypad* keypadPtr,HX711* scalePtr)
   currentState = ST_HOMEPAGE;
   currentRow = minRow;
   typingDone = false;
+  gasLevelLow = false;
   prevWeight = 0;
   cylinderSize = EEPROM[EEPR_CYLINDER_SIZE] % 255;
   HMI::GetMobileNum(); 
@@ -312,4 +318,14 @@ void HMI::ClearTypingDoneFlag(void)
 bool HMI::GetTypingDoneFlag(void)
 {
   return typingDone;
+}
+
+bool HMI:: GetGasLevel(void)
+{
+  return gasLevelLow;
+}
+
+void HMI::ClearGasLevelFlag(void)
+{
+  gasLevelLow = false;
 }

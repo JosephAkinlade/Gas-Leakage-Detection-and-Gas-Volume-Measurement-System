@@ -15,6 +15,7 @@ class HMI
     State currentState;
     uint8_t currentRow; //LCD
     bool typingDone;
+    bool gasLevelLow;
     float prevWeight;
     //Parameter to configure on the device
     uint8_t cylinderSize;
@@ -24,8 +25,7 @@ class HMI
     void SetMobileNum(char* numBuffer);
     //Parameter buffer
     char cylinderSizeBuff[3];
-    char mobileNum[13];
-    
+  
     void AlignData(uint8_t param);
     //Display Methods
     void HighlightRow(uint8_t row, char** heading);
@@ -40,14 +40,15 @@ class HMI
     void StateFunc_Menupage(void);
     void StateFunc_SetSize(void);
     void StateFunc_ChangeNum(void);
-    //void StateFunc_LeakageCheck(void);
     void StoreMobileNum(void);
     void GetMobileNum(void);
      
   public:
+    char mobileNum[13];
     HMI(LiquidCrystal_I2C* lcdPtr,Keypad* keyPadPtr,HX711* scalePtr);
     void Start(void);
     void ClearTypingDoneFlag(void);
     bool GetTypingDoneFlag(void);
-    
+    bool GetGasLevel(void);
+    void ClearGasLevelFlag(void);   
 };
