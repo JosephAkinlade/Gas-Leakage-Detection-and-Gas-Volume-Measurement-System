@@ -140,13 +140,15 @@ void HMI::DisplayRowHeadings(char** heading, bool num = false)
 void HMI::DisplayHomePage(void)
 {
   char heading1[] = "Size(KG): ";
-  char heading2[] = "Total Mass(KG): ";
+  char heading2[] = "Total Mass(KG):";
   char heading3[] = "Gas left(KG): ";
   char heading4[] = "";
   char* heading[] = {heading1,heading2,heading3,heading4};
   HMI::DisplayRowHeadings(heading);
   lcdPtr->setCursor(10,0);
   HMI::AlignData(HMI::cylinderSize); 
+  lcdPtr->setCursor(15,1);
+  lcdPtr->print(prevWeight);
 }
 
 void HMI::DisplayMenuPage(void)
@@ -187,10 +189,14 @@ void HMI::changeStateTo(State nextState)
 
 void HMI::StateFunc_Homepage(void)
 {
+  float weight = abs(scalePtr->get_units());
   HMI::DisplayHomePage();
-//  lcdPtr->setCursor(16,1);
-//  lcdPtr->print(abs(scalePtr->get_units()),1);
-  Serial.println(abs(scalePtr->get_units()),1);
+  lcdPtr->setCursor(15,1);
+  if(lround(prevWeight*10) != lround(weight*10))
+  {
+    prevWeight = weight;
+    lcdPtr->print(prevWeight,2);  
+  }
   char key = keypadPtr->GetChar();
   switch(key)
   {
@@ -267,6 +273,7 @@ HMI::HMI(LiquidCrystal_I2C* lcdPtr,Keypad* keypadPtr,HX711* scalePtr)
   currentState = ST_HOMEPAGE;
   currentRow = minRow;
   typingDone = false;
+  prevWeight = 0;
   cylinderSize = EEPROM[EEPR_CYLINDER_SIZE] % 255;
   HMI::GetMobileNum(); 
   uint8_t i;

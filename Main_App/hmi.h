@@ -15,6 +15,7 @@ class HMI
     State currentState;
     uint8_t currentRow; //LCD
     bool typingDone;
+    float prevWeight;
     //Parameter to configure on the device
     uint8_t cylinderSize;
     //Keypad input methods

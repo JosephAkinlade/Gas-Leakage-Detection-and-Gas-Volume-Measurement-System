@@ -14,10 +14,10 @@ uint8_t rowPins[NUMBER_OF_ROWS] = {5,6,7,8};
 uint8_t columnPins[NUMBER_OF_COLUMNS] = {9,10,11,12};
 
 static Keypad keypad(rowPins,columnPins);
-static SoftwareSerial gsmSerial(3,2); //GSM RX:2, GSM TX:3
+static SoftwareSerial gsmSerial(-1,2); //GSM RX:2, GSM TX:3
 static SIM800L gsm(&gsmSerial);
 static LiquidCrystal_I2C lcd(0x27,20,4);
-static HX711 scale;
+HX711 scale;
 static HMI hmi(&lcd,&keypad,&scale);
 
 float calibration_factor = -104000; //This value seemed to work well
