@@ -18,7 +18,7 @@ class HMI
     bool gasLevelLow;
     float prevWeight;
     //Parameter to configure on the device
-    uint8_t cylinderSize;
+    
     //Keypad input methods
     void StoreKey(char key,char* keyBuffer,uint8_t len);
     void SetParam(uint8_t* paramPtr,char* paramBuffer,uint8_t paramColumn);
@@ -45,6 +45,7 @@ class HMI
      
   public:
     char mobileNum[13];
+    uint8_t cylinderSize;
     HMI(LiquidCrystal_I2C* lcdPtr,Keypad* keyPadPtr,HX711* scalePtr);
     void Start(void);
     void ClearTypingDoneFlag(void);

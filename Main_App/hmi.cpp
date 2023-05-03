@@ -140,7 +140,7 @@ void HMI::DisplayHomePage(void)
   char heading1[] = "Size(KG): ";
   char heading2[] = "Total Mass(KG):";
   char heading3[] = "Gas left(KG): ";
-  char heading4[] = "";
+  char heading4[] = "Status:";
   char* heading[] = {heading1,heading2,heading3,heading4};
   HMI::DisplayRowHeadings(heading);
   lcdPtr->setCursor(10,0);
@@ -198,9 +198,15 @@ void HMI::StateFunc_Homepage(void)
   }
   lcdPtr->setCursor(14,2);
   lcdPtr->print(gasLeft);
+  lcdPtr->setCursor(7,3);
   if(lround(gasLeft) <= 2 )
   {
     gasLevelLow = true;
+    lcdPtr->print("Low   ");
+  }
+  else
+  {
+    lcdPtr->print("Good");
   }
   char key = keypadPtr->GetChar();
   switch(key)

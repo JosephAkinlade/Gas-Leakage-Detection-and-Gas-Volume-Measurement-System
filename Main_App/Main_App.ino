@@ -23,7 +23,8 @@ static HX711 scale;
 static HMI hmi(&lcd,&keypad,&scale);
 
 float calibration_factor = -104000; //This value seemed to work well
-bool msgSent = false;
+bool leakageMsgSent = false;
+bool lowLevelMsgSent = false;
 
 
 /**
@@ -70,18 +71,18 @@ void loop() {
   if(rawVal > THRESHOLD)
   {
     digitalWrite(BUZZER, HIGH);
-    if(!msgSent)
+    if(!leakageMsgSent)
     {
       char phoneNum[SIZE_PHONE + 3] = "+234";
       strcpy(phoneNum + 4,hmi.mobileNum + 1);
       gsm.SendSMS(phoneNum, "GAS LEAKAGE DETECTED");
-      msgSent = true;
+      leakageMsgSent = true;
     } 
   }
   else
   {
     digitalWrite(BUZZER, LOW);
-    msgSent = false;
+    leakageMsgSent = false;
   }
   
   hmi.Start();
@@ -90,12 +91,21 @@ void loop() {
     NotifyParamSave(lcd);
     hmi.ClearTypingDoneFlag();
   }
-  if(hmi.GetGasLevel())
+  float gasLeft = fabs(fabs(scale.get_units()) - hmi.cylinderSize);
+  if(lround(gasLeft) < 2)
   {
-    char phoneNum[SIZE_PHONE + 3] = "+234";
-    strcpy(phoneNum + 4,hmi.mobileNum + 1);
-    //Send message every 3 minute
-    gsm.SendSMS(phoneNum, "GAS LEVEL LOW",180000);
-    hmi.ClearGasLevelFlag();
+    if(!lowLevelMsgSent)
+    {
+      char phoneNum[SIZE_PHONE + 3] = "+234";
+      strcpy(phoneNum + 4,hmi.mobileNum + 1);
+      Serial.println(phoneNum);
+      //gsm.SendSMS(+2347032503874, "GAS LEVEL LOW");
+      Serial.println("Msg Sent");
+      lowLevelMsgSent = true;
+    } 
+  }
+  else
+  {
+    lowLevelMsgSent = false;
   }
 }
