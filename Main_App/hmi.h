@@ -44,7 +44,7 @@ class HMI
     void GetMobileNum(void);
      
   public:
-    char mobileNum[13];
+    char mobileNum[12];
     uint8_t cylinderSize;
     HMI(LiquidCrystal_I2C* lcdPtr,Keypad* keyPadPtr,HX711* scalePtr);
     void Start(void);

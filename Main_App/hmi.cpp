@@ -287,6 +287,7 @@ HMI::HMI(LiquidCrystal_I2C* lcdPtr,Keypad* keypadPtr,HX711* scalePtr)
   gasLevelLow = false;
   prevWeight = 0;
   cylinderSize = EEPROM[EEPR_CYLINDER_SIZE] % 255;
+  memset(HMI::mobileNum,'\0',sizeof(HMI::mobileNum));
   HMI::GetMobileNum(); 
   uint8_t i;
   for(i = 0; i < 2; i++)

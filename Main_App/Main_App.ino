@@ -7,7 +7,7 @@
 
 #define BUZZER            A1
 #define MQ5_PIN           A0
-#define THRESHOLD         140
+#define THRESHOLD         150
 #define LOADCELL_DOUT_PIN  4
 #define LOADCELL_SCK_PIN   3
 #define SIZE_PHONE         12
@@ -83,8 +83,7 @@ void loop() {
   {
     digitalWrite(BUZZER, LOW);
     leakageMsgSent = false;
-  }
-  
+  } 
   hmi.Start();
   if(hmi.GetTypingDoneFlag())
   {
@@ -98,9 +97,7 @@ void loop() {
     {
       char phoneNum[SIZE_PHONE + 3] = "+234";
       strcpy(phoneNum + 4,hmi.mobileNum + 1);
-      Serial.println(phoneNum);
-      //gsm.SendSMS(+2347032503874, "GAS LEVEL LOW");
-      Serial.println("Msg Sent");
+      gsm.SendSMS(phoneNum,"GAS LEVEL LOW");
       lowLevelMsgSent = true;
     } 
   }
