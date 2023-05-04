@@ -98,6 +98,8 @@ void HMI::SetMobileNum(char* numBuffer)
         lcdPtr->setCursor(0,0);
         lcdPtr->print(' ');
         HMI::StoreMobileNum();
+        memset(HMI::mobileNum,'\0',sizeof(HMI::mobileNum));
+        HMI::GetMobileNum();
         typingDone = true;
         Serial.println(HMI::mobileNum);
         break;
