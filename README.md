@@ -19,3 +19,4 @@ This project aims to develop a gas leakage detection and gas level monitoring sy
 5. HX711 Weighing Sensor
 6. 4x4 Keypad
 7. Buzzer
+8. 20x4 LCD
